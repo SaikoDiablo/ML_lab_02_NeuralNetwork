@@ -24,6 +24,7 @@ y = digits.target
 
 
 def one_hot_encode(labels, num_classes=10):
+    """Convert integer class labels to one-hot encoded rows."""
     encoded = np.zeros((len(labels), num_classes), dtype=np.float64)
     encoded[np.arange(len(labels)), labels] = 1.0
     return encoded
@@ -31,6 +32,7 @@ def one_hot_encode(labels, num_classes=10):
 
 Y = one_hot_encode(y, num_classes=10)
 
+# Split inputs and  label together
 X_train, X_test, Y_train, Y_test, y_train, y_test = train_test_split(
     X,
     Y,
@@ -48,6 +50,8 @@ print("Training one-hot labels:", Y_train.shape)
 print("Test one-hot labels:", Y_test.shape)
 print("Normalized input range:", X.min(), "to", X.max())
 
+
+#  Initializing parameters
 def initialize_parameters(input_size, hidden_width, output_size=10, seed=42):
     rng = np.random.default_rng(seed)
 
@@ -61,23 +65,30 @@ def initialize_parameters(input_size, hidden_width, output_size=10, seed=42):
     }
 
 
+
+#functions
 def relu(z):
+    """Rectified Linear Unit: max(0, z)."""
     return np.maximum(0.0, z)
 
 
 def softmax(logits):
+    """Numerically stable softmax, applied independently per row."""
     shifted = logits - np.max(logits, axis=1, keepdims=True)
     exp_values = np.exp(shifted)
     return exp_values / np.sum(exp_values, axis=1, keepdims=True)
 
+# propagation
 def forward_pass(X_batch, params):
-  
+    # 1st hidden layer
     Z1 = X_batch @ params["W1"] + params["b1"]
     A1 = relu(Z1)
 
+    # 2ndhidden layer
     Z2 = A1 @ params["W2"] + params["b2"]
     A2 = relu(Z2)
 
+    # Output layer
     Z3 = A2 @ params["W3"] + params["b3"]
     probabilities = softmax(Z3)
 
@@ -92,11 +103,17 @@ def forward_pass(X_batch, params):
     }
     return probabilities, cache
 
+
+
+# cross entropy loss
 def cross_entropy_loss(probabilities, Y_batch):
     epsilon = 1e-12
     correct_class_probabilities = np.sum(Y_batch * probabilities, axis=1)
     return -np.mean(np.log(correct_class_probabilities + epsilon))
 
+
+
+# backpropagation
 def backward_pass(Y_batch, params, cache):
     m = Y_batch.shape[0]
 
@@ -130,6 +147,8 @@ def backward_pass(Y_batch, params, cache):
         "b3": db3,
     }
 
+
+# accuracy
 def calculate_accuracy(X_data, Y_data, params):
     probabilities, _ = forward_pass(X_data, params)
     predictions = np.argmax(probabilities, axis=1)
@@ -137,6 +156,7 @@ def calculate_accuracy(X_data, Y_data, params):
     return np.mean(predictions == correct_labels)
 
 
+# numerical gradient
 def numerical_gradient(
     params,
     X_batch,
@@ -145,6 +165,7 @@ def numerical_gradient(
     index,
     epsilon=gradient_epsilon,
 ):
+    """Central-difference gradient for one parameter."""
     original_value = params[parameter_name][index]
 
     try:
@@ -232,10 +253,12 @@ def run_gradient_check():
     print("Gradient-check requirement met:", requirement_met)
     if not requirement_met:
         print(
-            "WARNING: the check did not reach 9/10. Review the repored "
-            "errors rather than changing the tolernce"
+            "WARNING: the check did not reach 9/10. Review the reported "
+            "errors rather than changing the tolerance."
         )
 
+
+#train mini-batch gradient descent
 def train_network(
     X_train_data,
     Y_train_data,
@@ -270,6 +293,7 @@ def train_network(
             for name in params:
                 params[name] -= learning_rate * gradients[name]
 
+        # Record full-training-set loss after each epoch.
         train_probabilities, _ = forward_pass(X_train_data, params)
         epoch_loss = cross_entropy_loss(train_probabilities, Y_train_data)
         loss_history.append(epoch_loss)
@@ -282,6 +306,7 @@ def train_network(
 
     return params, loss_history
 
+# run all comb
 def run_experiments():  
     results_dir.mkdir(parents=True, exist_ok=True)
     results = {}
@@ -329,7 +354,7 @@ def run_experiments():
         )
 
     plt.xlabel("Epoch")
-    plt.ylabel("Training cross entropy loss")
+    plt.ylabel("Training cross-entropy loss")
     plt.title("Training loss for each width and learning rate")
     plt.legend()
     plt.grid(True, alpha=0.3)
@@ -356,6 +381,8 @@ def run_experiments():
 
     return results
 
+
+#benchmark forward and backward pass
 def benchmark_forward_backward(
     hidden_width=64,
     batch_size=batch_size,
@@ -391,6 +418,8 @@ def benchmark_forward_backward(
     print(f"Forward pass median:  {np.median(forward_times) * 1000:.4f} ms")
     print(f"Backward pass median: {np.median(backward_times) * 1000:.4f} ms")
 
+
+# main 
 if __name__ == "__main__":
     run_gradient_check()
     experiment_results = run_experiments()
