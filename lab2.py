@@ -24,7 +24,6 @@ y = digits.target
 
 
 def one_hot_encode(labels, num_classes=10):
-    """Convert integer class labels to one-hot encoded rows."""
     encoded = np.zeros((len(labels), num_classes), dtype=np.float64)
     encoded[np.arange(len(labels)), labels] = 1.0
     return encoded
@@ -63,12 +62,10 @@ def initialize_parameters(input_size, hidden_width, output_size=10, seed=42):
 
 
 def relu(z):
-    """Rectified Linear Unit: max(0, z)."""
     return np.maximum(0.0, z)
 
 
 def softmax(logits):
-    """Numerically stable softmax, applied independently per row."""
     shifted = logits - np.max(logits, axis=1, keepdims=True)
     exp_values = np.exp(shifted)
     return exp_values / np.sum(exp_values, axis=1, keepdims=True)
@@ -148,7 +145,6 @@ def numerical_gradient(
     index,
     epsilon=gradient_epsilon,
 ):
-    """Central-difference gradient for one parameter."""
     original_value = params[parameter_name][index]
 
     try:
@@ -236,8 +232,8 @@ def run_gradient_check():
     print("Gradient-check requirement met:", requirement_met)
     if not requirement_met:
         print(
-            "WARNING: the check did not reach 9/10. Review the reported "
-            "errors rather than changing the tolerance."
+            "WARNING: the check did not reach 9/10. Review the repored "
+            "errors rather than changing the tolernce"
         )
 
 def train_network(
@@ -333,7 +329,7 @@ def run_experiments():
         )
 
     plt.xlabel("Epoch")
-    plt.ylabel("Training cross-entropy loss")
+    plt.ylabel("Training cross entropy loss")
     plt.title("Training loss for each width and learning rate")
     plt.legend()
     plt.grid(True, alpha=0.3)
